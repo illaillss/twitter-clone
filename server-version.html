@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Twitter Clone - Server Version</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+        .tweet-text {
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body class="bg-black text-white min-h-screen">
+    <!-- Giriş Sayfası -->
+    <div id="login-page" class="page-content">
+        <div class="min-h-screen bg-black flex items-center justify-center p-4">
+            <div class="w-full max-w-md">
+                <div class="bg-black rounded-2xl border border-gray-800 p-8">
+                    <div class="flex justify-center mb-8">
+                        <svg class="w-8 h-8" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                        </svg>
+                    </div>
+
+                    <h1 class="text-3xl font-bold text-white mb-2">Twitter'a giriş yap</h1>
+                    <p class="text-gray-500 mb-8">Sunucu versiyonu - Tüm cihazlardan erişim! 🌐</p>
+
+                    <div id="login-error" class="bg-red-900/20 border border-red-500 text-red-400 p-3 rounded-lg mb-4 hidden">
+                    </div>
+
+                    <form onsubmit="handleLogin(event)" class="space-y-4">
+                        <div>
+                            <input type="email" placeholder="E-posta" id="login-email" required
+                                class="w-full bg-transparent border border-gray-700 rounded-lg py-3 px-4 text-white placeholder-gray-500 focus:outline-none focus:border-blue-400">
+                        </div>
+                        <div>
+                            <input type="password" placeholder="Parola" id="login-password" required
+                                class="w-full bg-transparent border border-gray-700 rounded-lg py-3 px-4 text-white placeholder-gray-500 focus:outline-none focus:border-blue-400">
+                        </div>
+                        <button type="submit" class="w-full bg-blue-400 hover:bg-blue-500 text-black font-bold py-3 rounded-full">
+                            Giriş yap
+                        </button>
+                    </form>
+
+                    <div class="mt-6">
+                        <button onclick="showRegisterForm()" class="text-blue-400 hover:underline text-sm">
+                            Henüz hesabın yok mu? Kaydol
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Kayıt Sayfası -->
+    <div id="register-page" class="page-content hidden">
+        <div class="min-h-screen bg-black flex items-center justify-center p-4">
+            <div class="w-full max-w-md">
+                <div class="bg-black rounded-2xl border border-gray-800 p-8">
+                    <h1 class="text-3xl font-bold text-white mb-2">Hesap oluştur</h1>
+                    <p class="text-gray-500 mb-8">Sunucu versiyonu - Her yerden erişim! 🌍</p>
+
+                    <div id="register-error" class="bg-red-900/20 border border-red-500 text-red-400 p-3 rounded-lg mb-4 hidden">
+                    </div>
+
+                    <form onsubmit="handleRegister(event)" class="space-y-4">
+                        <input type="text" placeholder="Ad" id="register-name" required
+                            class="w-full bg-transparent border border-gray-700 rounded-lg py-3 px-4 text-white placeholder-gray-500 focus:outline-none focus:border-blue-400">
+                        <input type="email" placeholder="E-posta" id="register-email" required
+                            class="w-full bg-transparent border border-gray-700 rounded-lg py-3 px-4 text-white placeholder-gray-500 focus:outline-none focus:border-blue-400">
+                        <input type="text" placeholder="Kullanıcı adı" id="register-username" required
+                            class="w-full bg-transparent border border-gray-700 rounded-lg py-3 px-4 text-white placeholder-gray-500 focus:outline-none focus:border-blue-400">
+                        <input type="password" placeholder="Parola" id="register-password" required minlength="6"
+                            class="w-full bg-transparent border border-gray-700 rounded-lg py-3 px-4 text-white placeholder-gray-500 focus:outline-none focus:border-blue-400">
+                        <button type="submit" class="w-full bg-blue-400 hover:bg-blue-500 text-black font-bold py-3 rounded-full">
+                            Kaydol
+                        </button>
+                    </form>
+
+                    <div class="mt-6">
+                        <button onclick="showPage('login')" class="text-blue-400 hover:underline text-sm">
+                            Zaten hesabın var mı? Giriş yap
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ana Uygulama -->
+    <div id="app" class="hidden">
+        <div class="max-w-7xl mx-auto flex">
+            <!-- Sol Sidebar -->
+            <div class="w-64 px-4 py-4 fixed h-full">
+                <div class="mb-8">
+                    <svg class="w-8 h-8" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                    </svg>
+                </div>
+                
+                <nav class="space-y-2">
+                    <button onclick="showPage('home')" class="nav-btn w-full flex items-center gap-3 text-lg py-3 px-4 rounded-full hover:bg-gray-900 transition-colors text-white">
+                        <i class="fas fa-home w-6 h-6"></i>
+                        <span>Anasayfa</span>
+                    </button>
+                    <button onclick="showPage('profile')" class="nav-btn w-full flex items-center gap-3 text-lg py-3 px-4 rounded-full hover:bg-gray-900 transition-colors text-white">
+                        <i class="fas fa-user w-6 h-6"></i>
+                        <span>Profil</span>
+                    </button>
+                    <button onclick="logout()" class="w-full flex items-center gap-3 text-lg py-3 px-4 rounded-full hover:bg-gray-900 transition-colors text-white">
+                        <i class="fas fa-sign-out-alt w-6 h-6"></i>
+                        <span>Çıkış Yap</span>
+                    </button>
+                </nav>
+
+                <div class="absolute bottom-4 left-4 right-4">
+                    <div class="flex items-center gap-3 p-3 rounded-full hover:bg-gray-900 cursor-pointer transition-colors">
+                        <div id="user-avatar" class="w-10 h-10 bg-gray-600 rounded-full flex items-center justify-center">
+                            <span class="text-sm font-bold">K</span>
+                        </div>
+                        <div class="flex-1">
+                            <div id="user-name" class="font-semibold">Kullanıcı</div>
+                            <div id="user-username" class="text-gray-500 text-sm">@kullanici</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Ana İçerik -->
+            <div class="flex-1 ml-64">
+                <div class="max-w-2xl border-x border-gray-800">
+                    <div id="home-page" class="page-content">
+                        <div class="border-b border-gray-800 sticky top-0 bg-black/90 backdrop-blur z-10">
+                            <h1 class="text-xl font-bold p-4">Anasayfa 🌐 Sunucu Versiyonu</h1>
+                        </div>
+                        
+                        <!-- Tweet Oluşturma -->
+                        <div class="border-b border-gray-800 p-4">
+                            <div class="flex gap-3">
+                                <div id="tweet-avatar" class="w-12 h-12 bg-gray-600 rounded-full flex items-center justify-center flex-shrink-0">
+                                    <span class="text-lg font-bold">K</span>
+                                </div>
+                                <div class="flex-1">
+                                    <textarea placeholder="Neler oluyor?" id="tweet-input"
+                                        class="w-full bg-transparent border-none resize-none text-xl placeholder-gray-500 focus:outline-none p-0 min-h-[80px] tweet-text">
+                                    </textarea>
+                                    <button onclick="postTweet()" class="mt-4 bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-6 rounded-full">
+                                        Gönder
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tweet Akışı -->
+                        <div id="tweet-feed">
+                            <div class="border-b border-gray-800 p-8 text-center text-gray-500">
+                                <i class="fas fa-twitter w-16 h-16 mb-4"></i>
+                                <h3 class="text-xl font-semibold mb-2">Sunucuya bağlanılıyor...</h3>
+                                <p>Tweet'ler yükleniyor</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Sunucu API URL (Vercel deploy sonrası güncellenecek)
+        const API_URL = window.location.origin + '/api/data';
+        
+        // Global state
+        let currentUser = null;
+
+        // Sayfa gösterme
+        function showPage(pageId) {
+            document.querySelectorAll('.page-content').forEach(page => page.classList.add('hidden'));
+            const selectedPage = document.getElementById(pageId + '-page');
+            if (selectedPage) selectedPage.classList.remove('hidden');
+        }
+
+        // API çağrıları
+        async function apiCall(endpoint, options = {}) {
+            try {
+                const response = await fetch(`${API_URL}?type=${endpoint}`, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...options.headers
+                    },
+                    ...options
+                });
+                return await response.json();
+            } catch (error) {
+                console.error('API Error:', error);
+                return null;
+            }
+        }
+
+        // Giriş
+        async function handleLogin(event) {
+            event.preventDefault();
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+            
+            const users = await apiCall('users');
+            const user = users?.find(u => u.email === email && u.password === password);
+            
+            if (user) {
+                currentUser = { ...user };
+                delete currentUser.password;
+                localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                showApp();
+            } else {
+                document.getElementById('login-error').textContent = 'E-posta veya parola hatalı!';
+                document.getElementById('login-error').classList.remove('hidden');
+            }
+        }
+
+        // Kayıt
+        async function handleRegister(event) {
+            event.preventDefault();
+            const name = document.getElementById('register-name').value;
+            const email = document.getElementById('register-email').value;
+            const username = document.getElementById('register-username').value;
+            const password = document.getElementById('register-password').value;
+            
+            const users = await apiCall('users');
+            if (users?.some(u => u.email === email || u.username === username)) {
+                document.getElementById('register-error').textContent = 'Bu e-posta veya kullanıcı adı zaten kullanılıyor!';
+                document.getElementById('register-error').classList.remove('hidden');
+                return;
+            }
+            
+            const newUser = {
+                name,
+                email,
+                username,
+                password,
+                avatar: `https://ui-avatars.com/api/?name=${name}&background=random`,
+                bio: '',
+                followers: 0,
+                following: 0,
+                tweets: 0
+            };
+            
+            await apiCall('users', {
+                method: 'POST',
+                body: JSON.stringify(newUser)
+            });
+            
+            currentUser = { ...newUser };
+            delete currentUser.password;
+            localStorage.setItem('currentUser', JSON.stringify(currentUser));
+            showApp();
+        }
+
+        // Ana uygulamayı göster
+        function showApp() {
+            document.getElementById('login-page').classList.add('hidden');
+            document.getElementById('register-page').classList.add('hidden');
+            document.getElementById('app').classList.remove('hidden');
+            
+            if (currentUser) {
+                document.getElementById('user-name').textContent = currentUser.name;
+                document.getElementById('user-username').textContent = '@' + currentUser.username;
+                document.getElementById('user-avatar').innerHTML = `<img src="${currentUser.avatar}" class="w-full h-full rounded-full object-cover">`;
+            }
+            
+            showPage('home');
+            loadTweets();
+        }
+
+        // Tweet'leri yükle
+        async function loadTweets() {
+            const tweets = await apiCall('tweets');
+            const tweetFeed = document.getElementById('tweet-feed');
+            
+            if (!tweets || tweets.length === 0) {
+                tweetFeed.innerHTML = `
+                    <div class="border-b border-gray-800 p-8 text-center text-gray-500">
+                        <i class="fas fa-twitter w-16 h-16 mb-4"></i>
+                        <h3 class="text-xl font-semibold mb-2">Henüz tweet yok</h3>
+                        <p>İlk tweet'i sen gönder! 🌐</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            tweetFeed.innerHTML = tweets.map(tweet => `
+                <div class="border-b border-gray-800 p-4 hover:bg-gray-950 cursor-pointer transition-colors">
+                    <div class="flex gap-3">
+                        <div class="w-12 h-12 bg-gray-600 rounded-full flex items-center justify-center flex-shrink-0">
+                            <img src="${tweet.author.avatar}" class="w-full h-full rounded-full object-cover">
+                        </div>
+                        <div class="flex-1">
+                            <div class="flex items-center gap-1 mb-1">
+                                <span class="font-bold">${tweet.author.name}</span>
+                                <span class="text-gray-500">@${tweet.author.username}</span>
+                                <span class="text-gray-500">·</span>
+                                <span class="text-gray-500">${tweet.timestamp}</span>
+                            </div>
+                            <div class="text-white mb-3">${tweet.content}</div>
+                            <div class="flex items-center gap-6 text-gray-500">
+                                <button class="hover:bg-blue-400/10 hover:text-blue-400 p-2 rounded-full">
+                                    <i class="fas fa-comment w-5 h-5"></i>
+                                    <span class="text-sm ml-1">${tweet.replies || 0}</span>
+                                </button>
+                                <button class="hover:bg-green-400/10 hover:text-green-400 p-2 rounded-full">
+                                    <i class="fas fa-retweet w-5 h-5"></i>
+                                    <span class="text-sm ml-1">${tweet.retweets || 0}</span>
+                                </button>
+                                <button class="hover:bg-red-400/10 hover:text-red-400 p-2 rounded-full">
+                                    <i class="fas fa-heart w-5 h-5"></i>
+                                    <span class="text-sm ml-1">${tweet.likes || 0}</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Tweet gönderme
+        async function postTweet() {
+            const input = document.getElementById('tweet-input');
+            const content = input.value.trim();
+            
+            if (content && currentUser) {
+                const newTweet = {
+                    author: {
+                        name: currentUser.name,
+                        username: currentUser.username,
+                        avatar: currentUser.avatar
+                    },
+                    content,
+                    timestamp: 'az önce',
+                    likes: 0,
+                    retweets: 0,
+                    replies: 0
+                };
+                
+                await apiCall('tweets', {
+                    method: 'POST',
+                    body: JSON.stringify(newTweet)
+                });
+                
+                input.value = '';
+                loadTweets();
+            }
+        }
+
+        // Çıkış
+        function logout() {
+            currentUser = null;
+            localStorage.removeItem('currentUser');
+            document.getElementById('app').classList.add('hidden');
+            showPage('login');
+        }
+
+        // Kayıt formunu göster
+        function showRegisterForm() {
+            showPage('register');
+        }
+
+        // Sayfa yüklendiğinde kontrol et
+        window.onload = function() {
+            const savedUser = localStorage.getItem('currentUser');
+            if (savedUser) {
+                currentUser = JSON.parse(savedUser);
+                showApp();
+            } else {
+                showPage('login');
+            }
+        };
+    </script>
+</body>
+</html>
